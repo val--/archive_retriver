@@ -6,9 +6,9 @@ MY_BUCKET="archives-valgui"
 MY_PASS="TON_MOT_DE_PASSE_SECRET"
 MY_SALT="TON_DEUXIEME_MOT_DE_PASSE_SALT"
 DESTINATION="./restored_data"
-CLIENT_ID="TON_CLIENT_ID.apps.googleusercontent.com"
-CLIENT_SECRET="TON_CLIENT_SECRET"
+SERVICE_ACCOUNT_FILE="$(cd "$(dirname "$0")" && pwd)/google-key.json"
 DRY_RUN=false
+
 
 # --- SCRIPT ---
 
@@ -32,18 +32,24 @@ if ! command -v rclone &>/dev/null; then
     exit 1
 fi
 
+# Check service account key exists
+if [[ ! -f "$SERVICE_ACCOUNT_FILE" ]]; then
+    echo "Error: service account key not found at $SERVICE_ACCOUNT_FILE"
+    exit 1
+fi
+
 echo "--- Starting restoration ---"
 
 # Temporary config so we don't depend on any existing rclone setup
 export RCLONE_CONFIG="/tmp/rclone_restore.conf"
 trap 'rm -f "$RCLONE_CONFIG"' EXIT
 
-# Setup GCS remote
+# Setup GCS remote with service account (no OAuth needed)
 rclone config create gdrive-brut "google cloud storage" \
-    client_id "$CLIENT_ID" \
-    client_secret "$CLIENT_SECRET" \
+    service_account_file "$SERVICE_ACCOUNT_FILE" \
     bucket_policy_only true \
-    storage_class ARCHIVE
+    storage_class ARCHIVE \
+    --non-interactive
 
 # Setup encrypted (crypt) remote on top of GCS
 rclone config create secret crypt \
