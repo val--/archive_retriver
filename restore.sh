@@ -1,14 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
-# --- FILL IN YOUR CREDENTIALS ---
-MY_BUCKET="archives-valgui"
-MY_PASS="TON_MOT_DE_PASSE_SECRET"
-MY_SALT="TON_DEUXIEME_MOT_DE_PASSE_SALT"
-DESTINATION="./restored_data"
-SERVICE_ACCOUNT_FILE="$(cd "$(dirname "$0")" && pwd)/google-key.json"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env"
 DRY_RUN=false
 
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "Error: .env file not found at $ENV_FILE"
+    echo "Copy .env.example to .env and fill in your credentials."
+    exit 1
+fi
+source "$ENV_FILE"
+
+# Resolve relative SERVICE_ACCOUNT_FILE to absolute path
+[[ "$SERVICE_ACCOUNT_FILE" != /* ]] && SERVICE_ACCOUNT_FILE="$SCRIPT_DIR/$SERVICE_ACCOUNT_FILE"
 
 # --- SCRIPT ---
 
