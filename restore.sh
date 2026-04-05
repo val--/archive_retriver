@@ -58,7 +58,10 @@ rclone config create secret crypt \
     password2 "$MY_SALT"
 
 if $DRY_RUN; then
-    echo "Dry run: listing remote contents (decrypted names)..."
+    echo "Dry run: checking raw access to bucket..."
+    rclone lsd gdrive-brut:"$MY_BUCKET" && echo "OK: bucket accessible" || echo "FAIL: cannot access bucket"
+    echo "---"
+    echo "Listing decrypted contents..."
     rclone tree secret: --human-readable
     echo "---"
     rclone size secret:
